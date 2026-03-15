@@ -1,0 +1,7 @@
+{
+  "name": "SMM Panel Việt Nam",
+  "description": "Hệ thống cung cấp dịch vụ tăng tương tác mạng xã hội (Facebook, Instagram, TikTok...) tự động, uy tín và chuyên nghiệp.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

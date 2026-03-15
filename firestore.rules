@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: profiles
+    // Fields: uid, email, displayName, balance, totalSpent, rank, apiKey, telegramId, createdAt
+    //
+    // Collection: services
+    // Fields: name, categoryId, platformId, description, price, costPrice, min, max, serviceType, providerId, providerServiceId, status, refill, cancel
+    //
+    // Collection: orders
+    // Fields: userId, serviceId, link, quantity, charge, status, startCount, remains, providerOrderId, createdAt
+    //
+    // Collection: transactions
+    // Fields: userId, amount, type, description, status, createdAt
+    //
+    // Collection: settings
+    // Fields: siteName, maintenanceMode, currency, minDeposit
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.rank == 'Admin' ||
+         request.auth.token.email == "ngockhanhsocial@gmail.com");
+    }
+
+    function isValidProfile(data) {
+      return data.keys().hasAll(['uid', 'email', 'balance']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.balance is number;
+    }
+
+    function isValidOrder(data) {
+      return data.keys().hasAll(['userId', 'serviceId', 'link', 'quantity', 'charge', 'status']) &&
+             data.userId == request.auth.uid &&
+             data.quantity is number && data.quantity > 0 &&
+             data.charge is number && data.charge >= 0;
+    }
+
+    // Rules
+    match /profiles/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create: if isAuthenticated() && request.auth.uid == uid && isValidProfile(request.resource.data);
+      allow update: if (isOwner(uid) && request.resource.data.balance == resource.data.balance) || isAdmin();
+    }
+
+    match /services/{serviceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && isValidOrder(request.resource.data);
+      allow update: if isAdmin();
+    }
+
+    match /transactions/{txId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAdmin(); // Transactions are usually created by system/admin
+      allow update: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

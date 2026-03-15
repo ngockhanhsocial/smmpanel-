@@ -1,0 +1,93 @@
+{
+  "entities": {
+    "profiles": {
+      "title": "User Profile",
+      "description": "Stores user information, balance, and settings.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth UID" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "balance": { "type": "number", "description": "Current balance in VND" },
+        "totalSpent": { "type": "number" },
+        "rank": { "type": "string", "enum": ["Newbie", "VIP", "Partner"] },
+        "apiKey": { "type": "string" },
+        "telegramId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "balance"]
+    },
+    "services": {
+      "title": "SMM Service",
+      "description": "Available SMM services for users to order.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "platformId": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number", "description": "Price per 1000 units" },
+        "costPrice": { "type": "number" },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "serviceType": { "type": "string", "enum": ["Default", "Package", "Custom Comments"] },
+        "providerId": { "type": "string" },
+        "providerServiceId": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "refill": { "type": "boolean" },
+        "cancel": { "type": "boolean" }
+      },
+      "required": ["name", "price", "min", "max", "status"]
+    },
+    "orders": {
+      "title": "Order",
+      "description": "User orders for SMM services.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "serviceId": { "type": "string" },
+        "link": { "type": "string" },
+        "quantity": { "type": "number" },
+        "charge": { "type": "number" },
+        "status": { "type": "string", "enum": ["Pending", "In Progress", "Completed", "Partial", "Canceled", "Refunded"] },
+        "startCount": { "type": "number" },
+        "remains": { "type": "number" },
+        "providerOrderId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "serviceId", "link", "quantity", "charge", "status"]
+    },
+    "transactions": {
+      "title": "Transaction",
+      "description": "Financial transactions (deposits, orders, refunds).",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "amount": { "type": "number" },
+        "type": { "type": "string", "enum": ["Deposit", "Order", "Refund"] },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Completed", "Failed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "amount", "type", "status"]
+    },
+    "site_settings": {
+      "title": "Site Settings",
+      "description": "Global configuration for the SMM panel.",
+      "type": "object",
+      "properties": {
+        "siteName": { "type": "string" },
+        "maintenanceMode": { "type": "boolean" },
+        "currency": { "type": "string" },
+        "minDeposit": { "type": "number" }
+      }
+    }
+  },
+  "firestore": {
+    "profiles/{uid}": { "schema": "profiles", "description": "User profile documents" },
+    "services/{serviceId}": { "schema": "services", "description": "SMM service documents" },
+    "orders/{orderId}": { "schema": "orders", "description": "Order documents" },
+    "transactions/{txId}": { "schema": "transactions", "description": "Transaction documents" },
+    "settings/global": { "schema": "site_settings", "description": "Global site settings" }
+  }
+}
